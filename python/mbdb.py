@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from io import BytesIO
 
-# Mode bitfield
 from enum import IntFlag
 class _FileMode(IntFlag):
     S_IFMT   = 0o0170000
@@ -145,10 +144,10 @@ class Mbdb:
         d = BytesIO(data)
 
         if d.read(4) != b"mbdb":
-            raise ValueError("Invalid MBDB file")
+            raise ValueError("invalid mbdb file")
 
         if d.read(2) != b"\x05\x00":
-            raise ValueError("Invalid MBDB version")
+            raise ValueError("invalid mbdb version")
 
         records = []
         while d.tell() < len(data):

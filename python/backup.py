@@ -113,33 +113,32 @@ class SymbolicLink(BackupFile):
 class Backup:
     files: list[BackupFile]
 
-    def write_to_directory(self, directory: Path):
+    def dirwrite(self, directory: Path):
         for file in self.files:
             if isinstance(file, ConcreteFile):
-                #print("Writing", file.path, "to", directory / sha1((file.domain + "-" + file.path).encode()).digest().hex())
                 with open(directory / sha1((file.domain + "-" + file.path).encode()).digest().hex(), "wb") as f:
                     f.write(file.contents)
             
         with open(directory / "Manifest.mbdb", "wb") as f:
-            f.write(self.generate_manifest_db().to_bytes())
+            f.write(self.manifestdb().to_bytes())
 
         with open(directory / "Status.plist", "wb") as f:
-            f.write(self.generate_status())
+            f.write(self.status())
         
         with open(directory / "Manifest.plist", "wb") as f:
-            f.write(self.generate_manifest())
+            f.write(self.manifest())
 
         with open(directory / "Info.plist", "wb") as f:
             f.write(plistlib.dumps({}))
         
 
-    def generate_manifest_db(self): # Manifest.mbdb
+    def manifestdb(self):
         records = []
         for file in self.files:
             records.append(file.to_record())
         return mbdb.Mbdb(records=records)
     
-    def generate_status(self) -> bytes: # Status.plist
+    def status(self) -> bytes:
         return plistlib.dumps({
             "BackupState": "new",
             "Date": datetime.fromisoformat("1970-01-01T00:00:00+00:00"),
@@ -149,7 +148,7 @@ class Backup:
             "Version": "2.4"
         })
     
-    def generate_manifest(self) -> bytes: # Manifest.plist
+    def manifest(self) -> bytes:
         return plistlib.dumps({
             "BackupKeyBag": b64decode("""
     VkVSUwAAAAQAAAAFVFlQRQAAAAQAAAABVVVJRAAAABDud41d1b9NBICR1BH9JfVtSE1D

@@ -9,13 +9,11 @@ from pymobiledevice3.exceptions import PyMobileDevice3Exception
 from . import backup
 from .backup import _FileMode as FileMode
 
-def perform_restore(backup: backup.Backup, reboot: bool = False):
+def restore(backup: backup.Backup, reboot: bool = False):
     try:
         with TemporaryDirectory() as backup_dir:
             backup.write_to_directory(Path(backup_dir))
-            # print(f"Backup dump: {backup}")
-            # input("Press Enter to continue, or Ctrl+C to quit...")
-                
+
             lockdown = create_using_usbmux()
             with Mobilebackup2Service(lockdown) as mb:
                 mb.restore(backup_dir, system=True, reboot=reboot, copy=False, source=".")
@@ -24,8 +22,7 @@ def perform_restore(backup: backup.Backup, reboot: bool = False):
                     diagnostics_service.restart()
     except PyMobileDevice3Exception as e:
         if "Find My" in str(e):
-            print("Find My must be disabled in order to use this tool.")
-            print("Disable Find My from Settings (Settings -> [Your Name] -> Find My) and then try again.")
+            print("disable find my iphone.")
             raise e
         elif "crash_on_purpose" not in str(e):
             raise e
